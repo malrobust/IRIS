@@ -1,18 +1,5 @@
 <p align="center">
-<pre align="center" style="color: #a855f7; font-weight: bold;">
-               ▄▄               
-              ████              
-             ██████             
-            ████████            
-           ██████████           
-▄▄▄▄▄▄▄▄▄▄████████████▄▄▄▄▄▄▄▄▄▄
-████████████████████████████████
-▀▀▀▀▀▀▀▀▀██████████████▀▀▀▀▀▀▀▀▀
-              ████              
-             ██████             
-              ████              
-               ▀▀               
-</pre>
+  <img src="assets/logo.png" width="200" alt="IRIS — Unified OSINT Platform">
 </p>
 
 <h1 align="center">IRIS</h1>
