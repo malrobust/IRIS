@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 from iris.collectors import BaseCollector
 from iris.api_clients.free_sources import FreeSourcesClient
-from iris.db import cache
+
 
 
 class DomainCollector(BaseCollector):
@@ -17,10 +17,6 @@ class DomainCollector(BaseCollector):
         """Gather intelligence on a domain target."""
         domain = target.strip().lower()
 
-        # Check cache first (24h TTL)
-        cached_data = cache.get_cached_domain(domain)
-        if cached_data:
-            return self.parse(cached_data)
 
         # Run everything concurrently, including WHOIS via executor
         loop = asyncio.get_running_loop()
@@ -45,13 +41,7 @@ class DomainCollector(BaseCollector):
             "ssl_cert":    ssl_cert,
         }
 
-        cache.save_domain(
-            domain_name=domain,
-            whois_data=whois_data,
-            dns_records=dns_records,
-            subdomains=subdomains,
-            ssl_cert=ssl_cert,
-        )
+
 
         return self.parse(raw_data)
 

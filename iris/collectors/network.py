@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 from iris.collectors import BaseCollector
 from iris.api_clients.shodan import ShodanClient
-from iris.db import cache
+
 
 
 class NetworkCollector(BaseCollector):
@@ -30,15 +30,7 @@ class NetworkCollector(BaseCollector):
             except socket.gaierror:
                 return self.parse({"target": target, "error": "Could not resolve to an IP address."})
 
-        # Check cache
-        cached_data = cache.get_cached_ip(target)
-        if cached_data:
-            return self.parse({
-                "target": cached_data["target"],
-                "ip": cached_data["ip_address"],
-                "geo": cached_data["geo"],
-                "shodan": cached_data.get("shodan", {})
-            })
+
 
         # Fetch IP-API and Shodan concurrently
         geo_url = (
@@ -67,12 +59,7 @@ class NetworkCollector(BaseCollector):
             "shodan":  shodan_data
         }
 
-        cache.save_ip(
-            target=target,
-            ip_address=ip_address,
-            geo_data=geo_data,
-            shodan_data=shodan_data
-        )
+
 
         return self.parse(raw_data)
 

@@ -18,7 +18,7 @@ from iris.collectors.email import EmailCollector
 from iris.collectors.network import NetworkCollector
 from iris.collectors.code import CodeCollector
 from iris import exporters
-from iris.db import cache
+
 from iris import config
 
 __version__ = "0.1.0"
@@ -167,36 +167,6 @@ def run_profile(target: str, export: str = "none", force_type: Optional[str] = N
         console.print(f"\n  [red]✗ Error: {e}[/red]\n")
 
 
-def _print_history() -> None:
-    """Show recently queried targets from the cache."""
-    from iris.db.models import Domain, Email
-    from iris.db.cache import get_session
-    session = get_session()
-    try:
-        domains = session.query(Domain).order_by(Domain.updated_at.desc()).limit(10).all()
-        emails = session.query(Email).order_by(Email.created_at.desc()).limit(10).all()
-
-        if not domains and not emails:
-            console.print("\n  [dim]No history yet. Profile a target first.[/dim]\n")
-            return
-
-        table = Table(box=None, show_header=True, padding=(0, 2))
-        table.add_column("Type", style="dim", width=10)
-        table.add_column("Target", style="bold #c4b5fd", width=35)
-        table.add_column("Last Queried", style="dim")
-
-        for d in domains:
-            ts = d.updated_at.strftime("%Y-%m-%d %H:%M") if d.updated_at else "—"
-            table.add_row("domain", d.domain, ts)
-        for e in emails:
-            ts = e.created_at.strftime("%Y-%m-%d %H:%M") if e.created_at else "—"
-            table.add_row("email", e.email, ts)
-
-        console.print()
-        console.print(Panel(table, title="[bold #a855f7]History[/bold #a855f7]", border_style="#3b1a7a"))
-        console.print()
-    finally:
-        session.close()
 
 
 shell_style = Style.from_dict({
@@ -245,7 +215,7 @@ def interactive_shell():
                 help_table.add_row("  /config set <KEY>=<VAL>", "Set an API key (e.g. HIBP_API_KEY=123)")
                 help_table.add_row("  /status", "Check configured API keys")
                 help_table.add_row("  /export", "Cycle export mode: none → html → json → csv")
-                help_table.add_row("  /history", "Show recently profiled targets")
+
                 help_table.add_row("  clear", "Clear the terminal")
                 help_table.add_row("  quit", "Exit IRIS")
                 console.print()
@@ -260,9 +230,7 @@ def interactive_shell():
                 console.print(f"\n  [dim]● Export mode → [bold]{export_mode.upper()}[/bold][/dim]\n")
                 continue
 
-            if cmd == "/history":
-                _print_history()
-                continue
+
 
             if cmd == "/status":
                 keys = config.load_config()
@@ -306,7 +274,6 @@ def root(
         console.print(f"IRIS v{__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        cache.init_db()
         interactive_shell()
 
 
@@ -316,7 +283,6 @@ def profile(
     export: str = typer.Option("none", help="Export format: json|html|csv"),
 ):
     """Profile a target across all OSINT sources."""
-    cache.init_db()
     print_banner()
     run_profile(target, export)
 

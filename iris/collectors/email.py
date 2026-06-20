@@ -8,7 +8,7 @@ from iris.api_clients.github import GitHubClient
 from iris.api_clients.gravatar import GravatarClient
 from iris.api_clients.holehe_client import HoleheClient
 from iris.api_clients.hunter import HunterClient
-from iris.db import cache
+
 
 class EmailCollector(BaseCollector):
     """Collector for email-related intelligence."""
@@ -37,10 +37,7 @@ class EmailCollector(BaseCollector):
         """Gather intelligence on an email target."""
         email = target.strip().lower()
         
-        # Check cache first
-        cached_data = cache.get_cached_email(email)
-        if cached_data:
-            return self.parse(cached_data)
+
 
         domain_part = email.split("@")[1] if "@" in email else ""
         
@@ -73,12 +70,7 @@ class EmailCollector(BaseCollector):
             "hunter": hunter_data
         }
         
-        cache.save_email(
-            email_address=email,
-            breached=is_breached,
-            sources=sources,
-            profile_data=profile_data
-        )
+
 
         raw_data = {
             "email": email,
