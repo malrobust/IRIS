@@ -114,7 +114,8 @@ def save_email(
             session.add(record)
         
         record.breached = breached
-        record.sources = list(set(record.sources + sources))
+        existing_sources = record.sources or []
+        record.sources = list(set(existing_sources + sources))
         if domain_id:
             record.domain_id = domain_id
         record.created_at = datetime.utcnow()  # Refresh creation time to extend cache
