@@ -28,6 +28,15 @@ class Email(Base):
     
     domain = relationship("Domain", back_populates="emails")
 
+class NetworkIP(Base):
+    __tablename__ = "network_ips"
+    id = Column(Integer, primary_key=True)
+    target = Column(String, unique=True, nullable=False)
+    ip_address = Column(String, nullable=False)
+    geo_data = Column(JSON, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 class Correlation(Base):
     __tablename__ = "correlations"
     id = Column(Integer, primary_key=True)

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from iris.db.models import Base, Domain, Email, Correlation
+from iris.db.models import Base, Domain, Email, Correlation, NetworkIP
 
 DB_PATH = os.environ.get("IRIS_DB_PATH", "iris.db")
 DATABASE_URL = f"sqlite:///{DB_PATH}"
@@ -118,6 +118,51 @@ def save_email(
         if domain_id:
             record.domain_id = domain_id
         record.created_at = datetime.utcnow()  # Refresh creation time to extend cache
+        session.commit()
+        session.refresh(record)
+        return record.id
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+def get_cached_ip(target: str, max_age_hours: int = 24) -> Optional[Dict[str, Any]]:
+    """Retrieve IP/network data from cache if valid."""
+    session = get_session()
+    try:
+        target = target.strip()
+        record = session.query(NetworkIP).filter(NetworkIP.target == target).first()
+        if record and is_cached_still_valid(record.updated_at, max_age_hours):
+            return {
+                "id": record.id,
+                "target": record.target,
+                "ip_address": record.ip_address,
+                "geo": record.geo_data,
+                "created_at": record.created_at,
+                "updated_at": record.updated_at
+            }
+        return None
+    finally:
+        session.close()
+
+def save_ip(
+    target: str,
+    ip_address: str,
+    geo_data: Dict[str, Any]
+) -> int:
+    """Save or update an IP record in cache."""
+    session = get_session()
+    try:
+        target = target.strip()
+        record = session.query(NetworkIP).filter(NetworkIP.target == target).first()
+        if not record:
+            record = NetworkIP(target=target, ip_address=ip_address)
+            session.add(record)
+        
+        record.ip_address = ip_address
+        record.geo_data = geo_data
+        record.updated_at = datetime.utcnow()
         session.commit()
         session.refresh(record)
         return record.id

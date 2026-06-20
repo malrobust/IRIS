@@ -16,6 +16,7 @@ from prompt_toolkit.styles import Style
 from iris.collectors.domain import DomainCollector
 from iris.collectors.email import EmailCollector
 from iris.collectors.network import NetworkCollector
+from iris.collectors.code import CodeCollector
 from iris import exporters
 from iris.db import cache
 
@@ -55,8 +56,10 @@ def print_banner():
     console.print("\n")
 
 
-def _detect_collector(target: str):
+def _detect_collector(target: str, force_type: Optional[str] = None):
     """Detect the correct collector based on target type."""
+    if force_type == "code":
+        return CodeCollector()
     try:
         ipaddress.ip_address(target)
         return NetworkCollector()
@@ -136,8 +139,8 @@ def _print_generic_results(data: dict) -> None:
     console.print()
 
 
-def run_profile(target: str, export: str = "none") -> None:
-    collector = _detect_collector(target)
+def run_profile(target: str, export: str = "none", force_type: Optional[str] = None) -> None:
+    collector = _detect_collector(target, force_type=force_type)
 
     try:
         with console.status(f"[dim]Gathering intelligence on [bold cyan]{target}[/bold cyan]...[/dim]", spinner="dots"):
@@ -237,6 +240,7 @@ def interactive_shell():
                 help_table.add_column("Command", style="bold cyan", width=20)
                 help_table.add_column("Description", style="white")
                 help_table.add_row("  <target>", "Profile a domain, IP, or email")
+                help_table.add_row("  /code <target>", "Search GitHub for a domain/org name")
                 help_table.add_row("  /export", "Cycle export mode: none → html → json → csv")
                 help_table.add_row("  /history", "Show recently profiled targets")
                 help_table.add_row("  clear", "Clear the terminal")
@@ -255,6 +259,10 @@ def interactive_shell():
 
             if cmd == "/history":
                 _print_history()
+                continue
+
+            if cmd.startswith("/code "):
+                run_profile(text[6:].strip(), export_mode, force_type="code")
                 continue
 
             run_profile(text, export_mode)

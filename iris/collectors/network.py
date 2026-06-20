@@ -3,6 +3,7 @@ import socket
 from typing import Dict, Any
 
 from iris.collectors import BaseCollector
+from iris.db import cache
 
 
 class NetworkCollector(BaseCollector):
@@ -23,6 +24,15 @@ class NetworkCollector(BaseCollector):
             except socket.gaierror:
                 return self.parse({"target": target, "error": "Could not resolve to an IP address."})
 
+        # Check cache
+        cached_data = cache.get_cached_ip(target)
+        if cached_data:
+            return self.parse({
+                "target": cached_data["target"],
+                "ip": cached_data["ip_address"],
+                "geo": cached_data["geo"]
+            })
+
         url = (
             f"http://ip-api.com/json/{ip_address}"
             f"?fields=status,message,country,regionName,city,zip,lat,lon,isp,org,as,reverse,mobile,proxy,hosting"
@@ -38,6 +48,12 @@ class NetworkCollector(BaseCollector):
             "ip":      ip_address,
             "geo":     data,
         }
+
+        cache.save_ip(
+            target=target,
+            ip_address=ip_address,
+            geo_data=data
+        )
 
         return self.parse(raw_data)
 
