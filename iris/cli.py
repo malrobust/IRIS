@@ -17,6 +17,7 @@ from iris.collectors.domain import DomainCollector
 from iris.collectors.email import EmailCollector
 from iris.collectors.network import NetworkCollector
 from iris.collectors.code import CodeCollector
+from iris.collectors.username import UsernameCollector
 from iris import exporters
 
 from iris import config
@@ -61,6 +62,8 @@ def _detect_collector(target: str, force_type: Optional[str] = None):
     """Detect the correct collector based on target type."""
     if force_type == "code":
         return CodeCollector()
+    if force_type == "username":
+        return UsernameCollector()
     try:
         ipaddress.ip_address(target)
         return NetworkCollector()
@@ -212,6 +215,7 @@ def interactive_shell():
                 help_table.add_column("Description", style="white")
                 help_table.add_row("  <target>", "Profile a domain, IP, or email")
                 help_table.add_row("  /code <target>", "Search GitHub for a domain/org name")
+                help_table.add_row("  /sherlock <target>", "Search for a username across platforms")
                 help_table.add_row("  /config set <KEY>=<VAL>", "Set an API key (e.g. HIBP_API_KEY=123)")
                 help_table.add_row("  /status", "Check configured API keys")
                 help_table.add_row("  /export", "Cycle export mode: none → html → json → csv")
@@ -255,6 +259,12 @@ def interactive_shell():
 
             if cmd.startswith("/code "):
                 run_profile(text[6:].strip(), export_mode, force_type="code")
+                continue
+
+            if cmd.startswith("/sherlock ") or cmd.startswith("/username "):
+                # allow both /sherlock and /username
+                target_str = text.split(" ", 1)[1].strip()
+                run_profile(target_str, export_mode, force_type="username")
                 continue
 
             run_profile(text, export_mode)

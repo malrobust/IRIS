@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <strong>WHOIS &middot; DNS &middot; Subdomains &middot; Breaches &middot; Socials &middot; Code &middot; Network &middot; Shodan</strong>
+  <strong>WHOIS &middot; DNS &middot; Subdomains &middot; Breaches &middot; Socials &middot; Code &middot; Network &middot; Shodan &middot; Sherlock</strong>
 </p>
 
 ---
@@ -50,6 +50,9 @@ IRIS automatically detects the type of target you provide (Domain, IP, or Email)
 
 ### 💻 Code
 *   **GitHub Scanning:** The `/code` command instantly searches GitHub for repositories, sensitive files, or leaked secrets associated with your target.
+
+### 👤 Usernames (Sherlock)
+*   **Global Account Hunt:** The `/sherlock <username>` command dynamically searches across hundreds of social networks and websites to find every registered profile associated with a specific username.
 
 ---
 
@@ -101,8 +104,8 @@ malrobust@kali:~$ iris
 |---------|--------------|---------|
 | `<target>` | Profile a domain, IP, or email instantly. | `example.com`, `admin@example.com`, `1.1.1.1` |
 | `/code <target>` | Search GitHub for repositories and secrets. | `/code example.com` |
+| `/sherlock <target>` | Search across hundreds of platforms for a username. | `/sherlock admin123` |
 | `/export` | Cycle through export modes (`none`, `html`, `json`, `csv`). | `/export` |
-| `/history` | Show recently profiled targets. | `/history` |
 | `/config set <K>=<V>`| Set an API key securely (Stored in `~/.iris/config.json`). | `/config set SHODAN_API_KEY=xxx` |
 | `/config del <K>`| Delete an API key securely. | `/config del GITHUB_TOKEN` |
 | `/status` | Check which API keys are configured and active. | `/status` |
@@ -133,18 +136,7 @@ iris > /config set HIBP_API_KEY=your_key_here
 
 IRIS encrypts and stores these in `~/.iris/config.json` with strict `0600` permissions. If you don't have a key, IRIS gracefully skips that specific check or falls back to a free alternative.
 
----
 
-## 💾 Local SQLite Caching (Zero-Cost Recon)
-
-Tired of burning through API credits just because you forgot a port number and had to re-scan a target? 
-
-IRIS utilizes a seamless local `SQLite` database (`iris.db`) to cache all intelligence. 
-*   **Lightning Fast:** Repeated lookups return instantly from the disk.
-*   **Cost-Effective:** You only query premium APIs (like Shodan or Hunter) once per target.
-*   **Relationship Ready:** The database architecture is built to automatically correlate links between domains, IPs, and emails for graph generation.
-
----
 
 ## 📜 License
 
