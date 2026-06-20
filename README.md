@@ -57,14 +57,11 @@ IRIS automatically detects the type of target you provide (Domain, IP, or Email)
 
 We've made IRIS incredibly easy to install. It packages its own dependencies and injects an executable directly into your PATH.
 
-### Quick Install (Pip)
-```bash
-# Clone the repository
-git clone https://github.com/malrobust/iris.git
-cd iris
+### One-Line Install
+We've automated the entire setup process. This script creates an isolated virtual environment (PEP-668 compliant) and registers `iris` as a global command.
 
-# Install system-wide (or in a virtual environment)
-pip install .
+```bash
+curl -sSL https://raw.githubusercontent.com/malrobust/iris/master/install.sh | bash
 ```
 
 ### Running IRIS

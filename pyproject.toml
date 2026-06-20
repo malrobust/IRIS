@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "IRIS — Unified OSINT Intelligence Platform"
 readme = "README.md"
 requires-python = ">=3.9"
+dependencies = [
     "typer>=0.12.0",
     "rich>=13.7.0",
     "requests>=2.31.0",
