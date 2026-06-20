@@ -92,6 +92,7 @@ def get_cached_email(email_address: str, max_age_hours: int = 24) -> Optional[Di
                 "domain_id": record.domain_id,
                 "breached": record.breached,
                 "sources": record.sources,
+                "profile_data": getattr(record, "profile_data", {}),
                 "created_at": record.created_at
             }
         return None
@@ -102,6 +103,7 @@ def save_email(
     email_address: str,
     breached: bool,
     sources: List[str],
+    profile_data: Optional[Dict[str, Any]] = None,
     domain_id: Optional[int] = None
 ) -> int:
     """Save or update an email record in cache."""
@@ -116,6 +118,8 @@ def save_email(
         record.breached = breached
         existing_sources = record.sources or []
         record.sources = list(set(existing_sources + sources))
+        if profile_data:
+            record.profile_data = profile_data
         if domain_id:
             record.domain_id = domain_id
         record.created_at = datetime.utcnow()  # Refresh creation time to extend cache

@@ -44,7 +44,7 @@ Before making you manually verify anything, IRIS runs the target through a multi
 ```
 1. Is it a domain?  → Pull WHOIS, DNS (A, MX, TXT), Subdomains, and live SSL data.
 2. Is it an email?  → Run SMTP validation and check the Have I Been Pwned ledger.
-3. Is it an IP?     → Ping Geolocation, ASN, and ISP tracking.
+3. Is it an IP?     → Ping Geolocation, ASN, ISP tracking, and Shodan for open ports/vulnerabilities.
 4. Code / GitHub?   → Hunt for repository mentions and exposed secrets.
 5. Correlate        → Automatically graph the relationships in a local SQLite cache.
 ```
@@ -63,9 +63,11 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-Copy `.env.example` to `.env` if you have API keys (like GitHub or HIBP). If you don't? It gracefully falls back to simulations and free scraping. It works out of the box anyway.
-
-That was it. One setup.
+You can configure premium APIs (like Shodan, GitHub, or HaveIBeenPwned) directly inside the CLI:
+```bash
+iris > /config set SHODAN_API_KEY=your_key_here
+```
+No need to mess with `.env` files. IRIS will store your keys securely in `~/.iris/config.json`. If you don't have keys, IRIS gracefully falls back to free scraping and simulations.
 
 ## Commands
 
@@ -79,7 +81,11 @@ Inside the loop:
 | Command | What it does |
 |---------|--------------|
 | `<target>` | Profile a domain, IP, or email (e.g. `example.com`, `admin@example.com`, `1.1.1.1`) |
+| `/code <target>` | Search GitHub for repositories and secrets related to an organization or domain. |
 | `/export` | Cycle through export modes (`none`, `html`, `json`, `csv`). |
+| `/history` | Show recently profiled targets. |
+| `/config set <K>=<V>`| Set an API key securely (e.g. `HIBP_API_KEY=123`). |
+| `/status` | Check which API keys are configured and active. |
 | `clear` | Wipe the console. |
 | `quit` | Exit the matrix. |
 
@@ -92,7 +98,7 @@ iris profile example.com --export html
 ## FAQ
 
 **Does it need API keys?**
-No. An optional `.env` file can hold keys for premium lookups, but IRIS defaults to free OSINT sources and simulations if they aren't present.
+No. It works out of the box with free OSINT sources. You can add keys for premium lookups (Shodan, GitHub, HIBP) directly inside the CLI using the `/config set` command.
 
 **Is it a full-screen TUI?**
 No, it's a CLI that acts like an interactive REPL. It uses `prompt_toolkit` to give you a clean, beautiful chat-like interface without hijacking your entire terminal buffer, allowing you to scroll back naturally.

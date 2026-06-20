@@ -24,6 +24,7 @@ class Email(Base):
     domain_id = Column(Integer, ForeignKey("domains.id"), nullable=True)
     breached = Column(Boolean, default=False)
     sources = Column(JSON, default=list)  # Where found (e.g., website, github, pgp)
+    profile_data = Column(JSON, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     domain = relationship("Domain", back_populates="emails")

@@ -64,3 +64,25 @@ class GitHubClient:
         except Exception:
             pass
         return []
+
+    async def search_users_by_email(self, email: str) -> List[Dict[str, Any]]:
+        """Search for a GitHub user by their email address."""
+        # Using search/users?q={email}
+        url = f"https://api.github.com/search/users?q={email}"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=self.headers, timeout=5) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        items = data.get("items", [])
+                        results = []
+                        for item in items[:3]:
+                            results.append({
+                                "login": item.get("login"),
+                                "url": item.get("html_url"),
+                                "type": item.get("type")
+                            })
+                        return results
+        except Exception:
+            pass
+        return []
