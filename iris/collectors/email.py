@@ -6,6 +6,8 @@ from iris.collectors import BaseCollector
 from iris.api_clients.hibp import HIBPClient
 from iris.api_clients.github import GitHubClient
 from iris.api_clients.gravatar import GravatarClient
+from iris.api_clients.holehe_client import HoleheClient
+from iris.api_clients.hunter import HunterClient
 from iris.db import cache
 
 class EmailCollector(BaseCollector):
@@ -16,6 +18,8 @@ class EmailCollector(BaseCollector):
         self.hibp_client = HIBPClient()
         self.github_client = GitHubClient()
         self.gravatar_client = GravatarClient()
+        self.holehe_client = HoleheClient()
+        self.hunter_client = HunterClient()
 
     async def check_smtp(self, domain: str) -> bool:
         """Perform a basic check to see if the domain has MX records."""
@@ -40,13 +44,15 @@ class EmailCollector(BaseCollector):
 
         domain_part = email.split("@")[1] if "@" in email else ""
         
-        # Collect data concurrently
+        # Collect data concurrently (holehe might take 20s)
         results = await asyncio.gather(
             self.hibp_client.check_email_breached(email),
             self.hibp_client.get_breaches(email),
             self.check_smtp(domain_part),
             self.gravatar_client.get_profile(email),
             self.github_client.search_users_by_email(email),
+            self.holehe_client.get_registered_accounts(email),
+            self.hunter_client.verify_email(email),
             return_exceptions=True
         )
         
@@ -55,12 +61,16 @@ class EmailCollector(BaseCollector):
         has_smtp = results[2] if not isinstance(results[2], Exception) else False
         gravatar_profile = results[3] if not isinstance(results[3], Exception) else {}
         github_users = results[4] if not isinstance(results[4], Exception) else []
+        holehe_accounts = results[5] if not isinstance(results[5], Exception) else []
+        hunter_data = results[6] if not isinstance(results[6], Exception) else {}
         
         sources = [b.get("Name", "Unknown") for b in breaches]
         
         profile_data = {
             "gravatar": gravatar_profile,
-            "github": github_users
+            "github": github_users,
+            "holehe": holehe_accounts,
+            "hunter": hunter_data
         }
         
         cache.save_email(
@@ -92,15 +102,34 @@ class EmailCollector(BaseCollector):
         
         profile_data = raw.get("profile_data", {})
         
+        hunter = profile_data.get("hunter", {})
+        if hunter and "error" not in hunter:
+            parsed["Hunter Status"] = f"{hunter.get('status')} (Score: {hunter.get('score')})"
+            if hunter.get("first_name"):
+                parsed["Name"] = f"{hunter.get('first_name')} {hunter.get('last_name') or ''}".strip()
+            if hunter.get("company"):
+                parsed["Company"] = hunter.get("company")
+            if hunter.get("linkedin"):
+                parsed["LinkedIn"] = hunter.get("linkedin")
+        elif hunter and "error" in hunter:
+            # Only show error if they explicitly care about premium, usually we can just hide it
+            if "HUNTER_API_KEY not configured" not in hunter.get("error", ""):
+                parsed["Hunter.io"] = hunter.get("error")
+
         gravatar = profile_data.get("gravatar", {})
         if gravatar:
-            parsed["Display Name"] = gravatar.get("name") or gravatar.get("username", "Unknown")
+            if "Display Name" not in parsed:
+                parsed["Display Name"] = gravatar.get("name") or gravatar.get("username", "Unknown")
             if gravatar.get("accounts"):
-                parsed["Associated Accounts"] = ", ".join(gravatar.get("accounts"))
+                parsed["Gravatar Accounts"] = ", ".join(gravatar.get("accounts"))
                 
         github = profile_data.get("github", [])
         if github:
             parsed["GitHub Users"] = ", ".join([f"{u.get('login')} ({u.get('type')})" for u in github])
+
+        holehe = profile_data.get("holehe", [])
+        if holehe:
+            parsed["Registered Sites"] = ", ".join(holehe)
             
         parsed["_raw"] = raw
         return parsed
