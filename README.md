@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" width="200" alt="IRIS — Unified OSINT Platform">
+  <img src="assets/logo-dark.png" width="200" alt="IRIS — Unified OSINT Platform">
 </p>
 
 <h1 align="center">IRIS</h1>
