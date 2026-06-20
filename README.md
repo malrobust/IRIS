@@ -1,28 +1,123 @@
-# IRIS — Unified OSINT Intelligence Platform
+<p align="center">
+<pre align="center" style="color: #a855f7; font-weight: bold;">
+               ▄▄               
+              ████              
+             ██████             
+            ████████            
+           ██████████           
+▄▄▄▄▄▄▄▄▄▄████████████▄▄▄▄▄▄▄▄▄▄
+████████████████████████████████
+▀▀▀▀▀▀▀▀▀██████████████▀▀▀▀▀▀▀▀▀
+              ████              
+             ██████             
+              ████              
+               ▀▀               
+</pre>
+</p>
 
-**See everything. Know everyone. Intelligence, unified.**
+<h1 align="center">IRIS</h1>
 
-IRIS is an open-source OSINT reconnaissance suite that consolidates fragmented intelligence sources into one cohesive, intelligent platform. Designed for bug bounty hunters, red teamers, and security researchers, IRIS gathers data across domains, emails, code repositories, and network infrastructure, intelligently correlating findings.
+<p align="center">
+  <em>See everything. Know everyone. Intelligence, unified.</em>
+</p>
 
-## Features
-- **Domain Intelligence**: WHOIS, DNS records, Subdomain enumeration (crt.sh), SSL certificate analysis.
-- **Email Intelligence**: Validation, SMTP enumeration, data breach lookups (Have I Been Pwned).
-- **Code Intelligence**: GitHub repository search and public code mentions.
-- **Network Intelligence**: IP Geolocation and ASN lookups.
-- **Correlation Engine**: Automatically links discovered entities (e.g., domains to IP addresses, emails to domains).
-- **TUI & CLI**: Beautiful neon cyan Terminal User Interface (TUI) powered by Textual, alongside scriptable Typer CLI commands.
-- **Exporting**: Export comprehensive reports to JSON, CSV, or a styled HTML document.
+<p align="center">
+  <img src="https://img.shields.io/github/stars/malrobust/IRIS?style=flat-square&color=111111&label=stars" alt="Stars">
+  <img src="https://img.shields.io/github/v/release/malrobust/IRIS?style=flat-square&color=111111&label=release" alt="Release">
+  <img src="https://img.shields.io/badge/targets-Domain%20|%20Email%20|%20IP-111111?style=flat-square" alt="Supported targets">
+  <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT license">
+</p>
 
-## Quick Start
-See `INSTALL.md` for installation instructions.
+<p align="center">
+  <strong>WHOIS &middot; DNS &middot; Subdomains &middot; Breaches &middot; Code &middot; Network</strong>
+</p>
+
+---
+
+You know the drill. Five different terminal tabs open. Running `whois` in one, `dig` in another, checking `crt.sh` in the browser, and hunting for secrets on GitHub. 
+
+IRIS puts it all into one prompt.
+
+## Before / after
+
+You want to profile a target domain. You manually script together five tools, figure out how to parse their XML/JSON, store the output in ten different text files, and then try to manually correlate the IP addresses to the mail servers.
+
+With IRIS:
 
 ```bash
-# Start the interactive TUI
-iris
+iris > example.com
+```
 
-# Profile a target directly from CLI and export to HTML
+Everything else is done for you. The caching, the correlation, the beautiful neon reporting. One command.
+
+## How it works
+
+Before making you manually verify anything, IRIS runs the target through a multi-tier collection ladder:
+
+```
+1. Is it a domain?  → Pull WHOIS, DNS (A, MX, TXT), Subdomains, and live SSL data.
+2. Is it an email?  → Run SMTP validation and check the Have I Been Pwned ledger.
+3. Is it an IP?     → Ping Geolocation, ASN, and ISP tracking.
+4. Code / GitHub?   → Hunt for repository mentions and exposed secrets.
+5. Correlate        → Automatically graph the relationships in a local SQLite cache.
+```
+
+Lazy, but precise: APIs are cached locally. You aren't burning rate limits. Everything is exported exactly how you want it, instantly.
+
+## Install
+
+Clone it and run the setup.
+
+```bash
+git clone https://github.com/malrobust/iris.git
+cd iris
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+Copy `.env.example` to `.env` if you have API keys (like GitHub or HIBP). If you don't? It gracefully falls back to simulations and free scraping. It works out of the box anyway.
+
+That was it. One setup.
+
+## Commands
+
+Drop into the interactive loop:
+```bash
+iris
+```
+
+Inside the loop:
+
+| Command | What it does |
+|---------|--------------|
+| `<target>` | Profile a domain, IP, or email (e.g. `example.com`, `admin@example.com`, `1.1.1.1`) |
+| `/export` | Cycle through export modes (`none`, `html`, `json`, `csv`). |
+| `clear` | Wipe the console. |
+| `quit` | Exit the matrix. |
+
+Or use it as a classic single-shot tool for scripting and CI pipelines:
+
+```bash
 iris profile example.com --export html
 ```
 
-## Environment Variables
-Copy `.env.example` to `.env` and fill in your API keys for enhanced functionality.
+## FAQ
+
+**Does it need API keys?**
+No. An optional `.env` file can hold keys for premium lookups, but IRIS defaults to free OSINT sources and simulations if they aren't present.
+
+**Is it a full-screen TUI?**
+No, it's a CLI that acts like an interactive REPL. It uses `prompt_toolkit` to give you a clean, beautiful chat-like interface without hijacking your entire terminal buffer, allowing you to scroll back naturally.
+
+**Where is the data stored?**
+Everything is automatically cached in a local SQLite database (`iris.db`) to prevent redundant lookups. 
+
+**Why "IRIS"?**
+Because it sees everything.
+
+---
+
+## License
+
+[MIT](LICENSE). The clearest license there is.
