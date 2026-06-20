@@ -1,54 +1,70 @@
+import ipaddress
 import socket
 from typing import Dict, Any
 
 from iris.collectors import BaseCollector
 
+
 class NetworkCollector(BaseCollector):
-    """Collector for network-related intelligence (IPs, Ports, Geolocation)."""
-    
+    """Collector for network-related intelligence (IPs, Geolocation, ASN)."""
+
     async def collect(self, target: str) -> Dict[str, Any]:
-        """Gather intelligence on an IP or hostname target."""
+        """Gather intelligence on an IP target."""
         target = target.strip()
-        
-        # Try to resolve hostname to IP if it's not an IP
+
+        # Resolve hostname to IP if needed
         ip_address = target
         try:
-            socket.inet_aton(target) # test if valid IPv4
-        except OSError:
+            ipaddress.ip_address(target)
+        except ValueError:
             try:
-                ip_address = socket.gethostbyname(target)
+                loop_ip = socket.gethostbyname(target)
+                ip_address = loop_ip
             except socket.gaierror:
-                return self.parse({"target": target, "error": "Could not resolve IP."})
+                return self.parse({"target": target, "error": "Could not resolve to an IP address."})
 
-        # Use ip-api for free geolocation (http is required for free tier, or https if paid)
-        # We use http to ensure free tier works without API key
-        url = f"http://ip-api.com/json/{ip_address}?fields=status,message,country,regionName,city,zip,lat,lon,isp,org,as"
+        url = (
+            f"http://ip-api.com/json/{ip_address}"
+            f"?fields=status,message,country,regionName,city,zip,lat,lon,isp,org,as,reverse,mobile,proxy,hosting"
+        )
         data = await self._fetch(url)
-        
+
         if not data or data.get("status") != "success":
-             return self.parse({"target": target, "ip": ip_address, "error": data.get("message", "API query failed") if data else "Network error"})
+            msg = data.get("message", "API query failed") if data else "Network error"
+            return self.parse({"target": target, "ip": ip_address, "error": msg})
 
         raw_data = {
-            "target": target,
-            "ip": ip_address,
-            "geo": data
+            "target":  target,
+            "ip":      ip_address,
+            "geo":     data,
         }
-        
+
         return self.parse(raw_data)
 
     def parse(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         """Normalize raw data into a structured report format."""
         if "error" in raw:
-            return {"Target": raw.get("target"), "Error": raw.get("error")}
+            return {"Target": raw.get("target"), "Error": raw.get("error"), "_raw": raw}
 
         geo = raw.get("geo", {})
+        flags = []
+        if geo.get("proxy"):
+            flags.append("Proxy")
+        if geo.get("hosting"):
+            flags.append("Hosting/VPN")
+        if geo.get("mobile"):
+            flags.append("Mobile")
+
         parsed = {
-            "Target": raw.get("target"),
-            "Resolved IP": raw.get("ip"),
-            "Location": f"{geo.get('city', 'Unknown')}, {geo.get('regionName', 'Unknown')}, {geo.get('country', 'Unknown')}",
-            "ISP": geo.get("isp", "Unknown"),
+            "Target":       raw.get("target"),
+            "Resolved IP":  raw.get("ip"),
+            "Hostname":     geo.get("reverse", "—"),
+            "Location":     f"{geo.get('city', '?')}, {geo.get('regionName', '?')}, {geo.get('country', '?')}",
+            "Coordinates":  f"{geo.get('lat', '?')}, {geo.get('lon', '?')}",
+            "ISP":          geo.get("isp", "Unknown"),
             "Organization": geo.get("org", "Unknown"),
-            "ASN": geo.get("as", "Unknown")
+            "ASN":          geo.get("as", "Unknown"),
+            "Flags":        ", ".join(flags) if flags else "None",
         }
         parsed["_raw"] = raw
         return parsed
