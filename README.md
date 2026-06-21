@@ -74,6 +74,12 @@ iris
 ```
 
 ---
+![IRIS demo](assets/demo.gif)
+
+
+
+
+
 
 ## 🛠️ Usage & Commands
 
