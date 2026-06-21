@@ -19,13 +19,14 @@
   <strong>WHOIS &middot; DNS &middot; Subdomains &middot; Breaches &middot; Socials &middot; Code &middot; Network &middot; Shodan &middot; Sherlock</strong>
 </p>
 
+
 ---
 
-You know the drill. Five different terminal tabs open. Running `whois` in one, `dig` in another, checking `crt.sh` in the browser, searching for breaches on HaveIBeenPwned, and hunting for secrets[...]
+You know the drill. Five different terminal tabs open. Running `whois` in one, `dig` in another, checking `crt.sh` in the browser, searching for breaches on HaveIBeenPwned, and hunting for secrets on GitHub in a fifth.
 
 **IRIS puts it all into one prompt.**
 
-Designed for modern penetration testers, bug bounty hunters, and threat intelligence analysts, IRIS is a high-performance CLI tool that unifies disparate OSINT data streams into beautifully format[...]
+Designed for modern penetration testers, bug bounty hunters, and threat intelligence analysts, IRIS is a high-performance CLI tool that unifies disparate OSINT data streams into beautifully formatted, actionable intelligence.
 
 ## 🚀 Features & Capabilities
 
@@ -43,7 +44,7 @@ IRIS automatically detects the type of target you provide (Domain, IP, or Email)
 
 ### 📧 Emails (The "Ultimate" Collector)
 *   **Breach Ledger (HIBP):** Checks if the email was involved in public data dumps.
-*   **Account Discovery (Holehe):** Asynchronously checks password-reset endpoints across **120+ social media and web services** (Twitter, GitHub, Imgur, etc.) to reveal where the target has regis[...]
+*   **Account Discovery (Holehe):** Asynchronously checks password-reset endpoints across **120+ social media and web services** (Twitter, GitHub, Imgur, etc.) to reveal where the target has registered.
 *   **Professional Profiling (Hunter.io):** Extracts First Name, Last Name, Job Title, Company, and LinkedIn/Twitter profiles.
 *   **Gravatar & GitHub Cross-referencing:** Extracts display names, associated wallets, and active code commits.
 *   **SMTP Validation:** Validates MX records to ensure the address is capable of receiving mail.
@@ -52,7 +53,7 @@ IRIS automatically detects the type of target you provide (Domain, IP, or Email)
 *   **GitHub Scanning:** The `/code` command instantly searches GitHub for repositories, sensitive files, or leaked secrets associated with your target.
 
 ### 👤 Usernames (Sherlock)
-*   **Global Account Hunt:** The `/sherlock <username>` command dynamically searches across hundreds of social networks and websites to find every registered profile associated with a specific use[...]
+*   **Global Account Hunt:** The `/sherlock <username>` command dynamically searches across hundreds of social networks and websites to find every registered profile associated with a specific username.
 
 ---
 
@@ -74,12 +75,6 @@ iris
 ```
 
 ---
-![IRIS demo](assets/demo.gif)
-
-
-
-
-
 
 ## 🛠️ Usage & Commands
 
@@ -119,6 +114,10 @@ malrobust@kali:~$ iris
 | `quit` | Exit the matrix. | `quit` |
 
 ---
+<p align="center">
+  <img src="assets/demo.gif" width="700" alt="IRIS terminal demo">
+</p>
+
 
 ## 🔑 Premium API Integrations
 
@@ -141,8 +140,6 @@ iris > /config set HIBP_API_KEY=your_key_here
 ```
 
 IRIS encrypts and stores these in `~/.iris/config.json` with strict `0600` permissions. If you don't have a key, IRIS gracefully skips that specific check or falls back to a free alternative.
-
-
 
 ## 📜 License
 
